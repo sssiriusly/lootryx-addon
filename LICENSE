@@ -1,0 +1,93 @@
+Lootryx Addon Source-Available License
+Version 1.0, 18 September 2026
+
+Copyright (c) 2026 the respective Lootryx addon copyright holders.
+All rights reserved except as expressly granted below.
+
+1. Scope
+
+This license applies to original Lootryx addon code, documentation and assets
+distributed with this license (the "Software"), to the extent the copyright
+holders have rights to license them. Separately licensed third-party material
+is excluded and remains subject to its own terms. This license does not cover
+the private Lootryx website, backend, databases or service infrastructure.
+
+2. Permission for players and reviewers
+
+Subject to these terms, you may download, install, run and make backup copies
+of the Software for your own use as an FFXI addon. You may read and inspect
+its source, including for security review, and modify your local copy for
+your own private use. You may share links to official downloads and publish
+screenshots, reviews and demonstrations of the addon.
+
+Ordinary use while playing, streaming or creating gameplay videos is allowed,
+including monetized streams and videos. This does not authorize selling the
+Software, distributing modified copies or incorporating its code into a
+commercial product or service.
+
+3. Activities requiring separate written permission
+
+Unless authorized by applicable law, a third-party license, or section 4,
+you must obtain written permission from the relevant copyright holders before:
+
+- Redistributing the Software or modified versions, including rebranded copies,
+  mirrors, bundles or releases offered outside the official distribution.
+- Selling, sublicensing, renting or charging for access to the Software.
+- Reusing its code or assets in another distributed product, or commercially
+  exploiting them in a product or service beyond the ordinary use in section 2.
+
+Sharing a link to an official release is permitted and is not redistribution.
+Permission requests may be directed to the maintainers through the official
+Lootryx addon repository. An unanswered request is not permission.
+
+4. GitHub and contributions
+
+Where the copyright holders publish the Software on GitHub, nothing in this
+license restricts rights granted under GitHub's applicable terms, including
+viewing and forking public repositories through GitHub. That exception does
+not itself grant permission to sell the Software or distribute releases
+outside those rights.
+
+You may submit patches to the official project for review, and publish the
+changes needed for that purpose in a contribution branch or pull request.
+For contributions you own and intentionally submit for inclusion, you grant
+the project permission to use, modify and distribute them under this license.
+You retain ownership of your contributions. Do not submit material you lack
+permission to contribute. Other licensing arrangements require agreement.
+
+5. Notices and branding
+
+Preserve applicable copyright, license and attribution notices in copies.
+No trademark rights are granted. You may use the Lootryx name to identify
+the addon accurately, but must not imply official endorsement of a modified
+version, product or service. Third-party names and artwork remain subject to
+their owners' rights.
+
+6. Third-party material and mandatory rights
+
+Third-party licenses take precedence for the material they cover. In
+particular, retain the notices for the certificate bundle and item-icon code
+identified in THIRD-PARTY-NOTICES.md. This license does not restrict rights
+you independently receive under those licenses, or rights that applicable
+law does not permit a copyright license to restrict.
+
+7. Disclaimer and liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+THE COPYRIGHT HOLDERS AND CONTRIBUTORS ARE NOT LIABLE FOR CLAIMS, DAMAGES
+OR OTHER LIABILITY ARISING FROM THE SOFTWARE OR ITS USE, WHETHER IN
+CONTRACT, TORT OR OTHERWISE. THIS DOES NOT EXCLUDE LIABILITY THAT CANNOT
+LAWFULLY BE EXCLUDED.
+
+8. Termination
+
+Permissions under this license terminate if you breach its terms. On
+termination, stop exercising those permissions and delete copies held under
+them. Independently granted third-party, platform and statutory rights are
+unaffected. Reinstatement requires written permission from the relevant
+copyright holders.
+
+This is a source-available license with usage and redistribution restrictions,
+not an open-source license.

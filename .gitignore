@@ -1,0 +1,7 @@
+data/
+config/
+assets/item-cache/
+lootryx-results.txt
+*.bak
+*.tmp
+.env*
