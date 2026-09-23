@@ -116,7 +116,10 @@ icon and TLS code as well as the main entry point. Verify source hashes against
 
 ## Approval and test limits
 
-There is no claim of GM approval, game-vendor endorsement or ban safety. See
+Phoenix staff reviewed this addon and approved it for use on Phoenix (2026-09-22).
+Any change to its features is resubmitted for review before release; cosmetic
+changes are not. This is not a game-vendor endorsement and says nothing about
+other servers' rules. See
 [validation](VALIDATION.md) for automated results and the remaining two-client,
 real-loader acceptance steps. Third-party rights are listed in
 [the notices](../THIRD-PARTY-NOTICES.md).

@@ -74,7 +74,10 @@ the player submits it. Optional macro downloads write the player's local macro f
 It also writes addon settings, an item-icon cache and explicitly exported result text.
 
 The [GM audit guide](docs/GAME-INTERACTION.md) maps reads, local writes, network traffic,
-background behavior and dependencies to source files. No GM approval is claimed.
+background behavior and dependencies to source files.
+
+Phoenix staff reviewed this addon and approved it for use on Phoenix. Any change to
+its features is resubmitted for review before release; cosmetic changes are not.
 
 ## Documentation and feedback
 
