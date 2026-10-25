@@ -49,6 +49,7 @@ function M.new()
     end
     local out={{kind='finderbar',value=ctx.search_display or self.search,focused=ctx.search_focused,
       placeholder='Search target or zone',action_id='focus:hnm.search',actions={action('surface:tod','Log ToD')}}}
+    if ctx.followed_hunt and ctx.followed_hunt~='' then out[#out+1]={kind='toolbar',title='Following: '..ctx.followed_hunt,actions={action('hnm:watch:','Stop following')}} end
     if ctx.freshness and ctx.freshness.accent=='bad' then out[#out+1]={kind='toolbar',title=ctx.freshness.subtitle,accent='bad'} end
     local query=(ctx.search_value or self.search):lower():match('^%s*(.-)%s*$')
     if query~='' then out[#out+1]={kind='toolbar',title='Matching target names and zones',actions={action('hnm:clear','Clear search')}} end
@@ -62,7 +63,7 @@ function M.new()
         local status=accent=='good' and 'OPEN NOW' or (accent=='info' and 'UPCOMING' or (value=='Window elapsed' and 'STALE' or 'UNKNOWN'))
         local timing=value:match('^%d%d:') and (detail..' '..value) or (value=='Window elapsed' and 'New witnessed ToD needed' or detail)
         out[#out+1]={kind='record',columns=columns,cells={{text=name,subtext=zone},{text=status,colour=accent,subtext=timing}},accent=accent,
-          action=text(target.name) and action('hnm:pick:'..name,'Log ToD') or nil}
+          action=text(target.name) and action('hnm:watch:'..name,ctx.followed_hunt==name and 'Following' or 'Follow') or nil}
         count=count+1
       end
     end

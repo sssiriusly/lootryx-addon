@@ -1,5 +1,23 @@
 -- Shared local tools and bounded output history. No platform APIs or network calls.
 local M={draft={book='',include='',exclude=''}, history={}, pending=nil}
+-- The website copies a whole command. The GUI accepts that or the bare code,
+-- without changing case or silently converting a different command into setup.
+function M.setup_code(value)
+  local raw=tostring(value or ''):gsub('\239\187\191',''):gsub('\226\128\139',''):gsub('\194\160',' '):match('^%s*(.-)%s*$')
+  raw=raw:match('^`(.-)`$') or raw
+  local code=raw
+  if raw:sub(1,1)=='/' then
+    local addon,verb,token=raw:match('^/+([%w]+)%s+([%w]+)%s+([%w_%-]+)%s*$')
+    if not addon or (addon:lower()~='lootryx' and addon:lower()~='lx') or verb:lower()~='setup' then
+      return nil,'Paste a setup code or setup command. A legacy link command must be run in game after configuring your key.'
+    end
+    code=token
+  else code=raw:gsub('%s','') end
+  if #code<4 or #code>24 or not code:match('^[%w_%-]+$') or code:lower()=='world' then
+    return nil,'That is not a setup code. Copy a fresh setup code from the website.'
+  end
+  return code
+end
 M.notices={}
 M.unread=0
 M.notice_sequence=0
@@ -84,10 +102,11 @@ function M.preference_rows(settings)
       action={id='notice:'..key,label=settings[key]~=false and 'Turn off' or 'Turn on'}}
   end
   local section=M.preference_section or 'background'
-  rows[#rows+1]={kind='choices',compact=true,options={{id='notices:group:background',label='Background',selected=section=='background'},{id='notices:group:auctions',label='Auctions',selected=section=='auctions'},{id='notices:group:party',label='Party',selected=section=='party'}}}
+  if settings.community_tools==false and section=='party' then section='background' end
+  rows[#rows+1]={kind='choices',compact=true,options={{id='notices:group:background',label='Background',selected=section=='background'},{id='notices:group:auctions',label='Auctions',selected=section=='auctions'},settings.community_tools~=false and {id='notices:group:party',label='Party',selected=section=='party'} or nil}}
   if section=='background' then
   option('live_auctions','Check auctions','Every '..tostring(settings.auction_refresh_interval)..'s while enabled')
-  option('live_recruitment','Check recruitment and invitations','Every '..tostring(settings.recruitment_refresh_interval)..'s while enabled')
+  if settings.community_tools~=false then option('live_recruitment','Check recruitment and invitations','Every '..tostring(settings.recruitment_refresh_interval)..'s while enabled') end
   option('live_attendance','Check event attendance','Every '..tostring(settings.attendance_refresh_interval or 30)..'s while enabled')
   option('notify_checkin','Attendance check-in alerts','Opened or closed check-in, after a successful background or manual refresh')
   elseif section=='auctions' then

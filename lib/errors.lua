@@ -78,7 +78,7 @@ function M.describe_failure(status, body)
     if contains(message, 'No event has an open check-in') or contains(message, 'There is no open check-in') then
       return 'No open check-in right now. Ask an officer to start check-in on the event.'
     end
-    if contains(message, 'link code') then
+    if message == 'That link code is expired.' or message == 'Invalid or expired link code.' then
       return 'That link code is invalid or expired. Get a fresh one from your My Characters page.'
     end
     if contains(message, 'world') or contains(message, 'region') then

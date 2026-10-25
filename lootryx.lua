@@ -104,7 +104,7 @@ end
 local _addon = host.metadata
 _addon.name = 'Lootryx'
 _addon.author = 'Sirius'
-_addon.version = '0.40.31'
+_addon.version = '0.40.32'
 _addon.commands = { 'lootryx', 'lx' }
 
 local config = host.config
@@ -227,6 +227,8 @@ local defaults = {
   notify_auction_results = true,
   notify_new_auctions = true,
   live_recruitment = true,
+  community_tools = false,
+  followed_hunt = '',
   live_attendance = true,
   attendance_refresh_interval = 30,
   notify_checkin = true,
@@ -306,6 +308,7 @@ local defaults = {
   -- Which theme the window draws in. Vana'diel by default: it is the look of the game's own menus,
   -- which is what an overlay sitting on top of them should read as. //lootryx theme lists the rest.
   theme = 'vanadiel',
+  background_opacity = 90,
   -- Persisted position, so a player moves it once. Top-left corner, in pixels.
   hud_x = 20,
   hud_y = 200,
@@ -1540,6 +1543,13 @@ local function do_setup(args)
     log('  no linkshell? //lootryx setup world   (party finder, no account needed)')
     return
   end
+  local parsed_code, code_error = host.ui_tools.setup_code(code)
+  if not parsed_code then
+    host.ui_tools.pair_feedback=code_error
+    log(code_error)
+    return
+  end
+  code=parsed_code
   local name = self_name()
   if not name then
     host.ui_tools.pair_feedback='Cannot read your character. Log in to the game and retry.'
@@ -3173,6 +3183,7 @@ local function do_dkp()
     return
   end
   hud_state.dkp = decoded.dkp
+  if type(decoded.windows)=='table' then hud_state.windows=decoded.windows end
   window_refresh()
   for _, line in ipairs(say.dkp_reply_lines(decoded.dkp)) do
     log(line)
@@ -3776,6 +3787,7 @@ local function hud_render()
     return
   end
 
+  hud_state.followed_hunt=settings.followed_hunt
   local lines, mode, width = hud_lib.build_lines(hud_state, os.time() * 1000)
   if #lines == 0 then
     -- "Draws nothing when there is nothing to say" (PRD §5): an empty frame is worse than no frame.
@@ -3786,22 +3798,9 @@ local function hud_render()
     return
   end
 
-  -- The header is IDENTITY, and it should be the quietest line in the box.
-  --
-  -- `LOOTRYX` in bold caps was the widest, loudest thing on screen in every state, so the eye landed
-  -- on the product name instead of on the item and the clock. In a one-colour, one-weight box the
-  -- only hierarchy tools are position, width, caps and whitespace, so spending caps on the brand
-  -- was spending the scarcest one on the least useful thing. `Lootryx` carries the same identity
-  -- (players run several overlays at once) with far less ink.
-  --
-  -- The mode tag is RIGHT ALIGNED against the same width the countdown uses, which turns this into
-  -- a title bar with a tag rather than a shouted phrase, and gives the box one right column. The tag
-  -- is also the colourblind fallback for the mode, which is why it stays capitalised.
-  -- The wordmark sits BACK. It is identity, not information: it says which overlay this is and
-  -- gives the box something to drag by, and it should lose every contest with the line under it.
-  -- The mode tag keeps the box's own colour, so the one word worth reading in the header is the
-  -- one that says how urgent this is.
-  local header = HUD_DIM .. 'Lootryx' .. HUD_RESET
+  -- Keep the active linkshell visible so balances and bids have a clear owner.
+  local identity=is_placeholder_slug(settings.shell_slug) and 'Not linked' or shell_label()
+  local header = HUD_DIM .. identity .. HUD_RESET
   if mode and mode ~= 'event' then
     local tag = string.upper(mode)
     -- Measured on the visible text: `header` now carries colour markup, and counting it would
@@ -4572,7 +4571,9 @@ local function window_state()
     count_label = host.jobs and host.jobs.busy() and (host.ui_tools.request_label or 'Background check in progress') or ({home=settings.world,me='Character',settings='Preferences',shell='Linkshell records',
       auctions=host.ui_tools.surfaces.auction_tab=='results' and ('Results: '..tostring(#(host.ui_tools.auction_results or {}))) or (tostring(counts.auctions or 0)..((counts.auctions or 0)==1 and ' auction' or ' auctions')),windows=tostring(counts.windows or 0)..' targets'})[tab]
       or ((tab=='lfg' or tab=='lfm') and not host.ui_tools.pf_focused and host.ui_tools.surfaces.find_counts[tab]) or (tab=='shells' and (counts.shells==nil and 'Directory not loaded' or tostring(counts.shells)..(counts.shells==1 and ' linkshell' or ' linkshells'))) or 'Party finder',
+    community_tools = settings.community_tools == true,
     theme = settings.theme,
+    background_opacity = settings.background_opacity,
     hover = panel_lib.hover(),
     page = window_page,
   }
@@ -4581,7 +4582,7 @@ end
 --- Fetch each public board at most once a session. Everything else still waits to be asked.
 local window_prefetched = false
 local function window_prefetch()
-  if window_prefetched then
+  if settings.community_tools ~= true or window_prefetched then
     return
   end
   window_prefetched = true
@@ -6214,6 +6215,8 @@ local function settings_rows(tier)
   select_rows(rows, 'theme', 'Theme', window_lib.theme_names(), settings.theme, function(value)
     return window_lib.theme(value).label
   end)
+  rows[#rows+1]={kind='slider',title='Background opacity',value=settings.background_opacity}
+  rows[#rows+1]={kind='toolbar',title='Party finding and linkshell discovery',actions={{id='settings:community',label=settings.community_tools==true and 'Community tools: ON' or 'Community tools: OFF'}}}
   rows[#rows + 1] = {
     title = 'Open on login', art = 'setting-window', art_size = 24, tag = settings.open_on_login ~= false and 'ON' or 'OFF',
     accent = settings.open_on_login ~= false and 'good' or 'dim',
@@ -6307,7 +6310,7 @@ window_rows_for = function(tab, tier)
     local rows={{kind='header',title='Connect your character'},
       {title='Back',tag='BACK',action={id='board:hub',label='Back'}},
       {title='Get a website pairing code',tag='LINK',art='claim',action={id='setup:open',label='Open'}}}
-    field_rows(rows,'setup.code','Code',setup_draft.code,'Paste your website pairing code')
+    field_rows(rows,'setup.code','Setup code',setup_draft.code,'Paste the code or setup command')
     if host.ui_tools.pair_feedback then rows[#rows+1]={kind='text',text=host.ui_tools.pair_feedback} end
     rows[#rows+1]={title=setup_draft.code~='' and 'Link this character' or 'Paste the code first',tag='LINK',art='claim',action=setup_draft.code~='' and {id='setup:go',label='Link',variant='primary'} or nil}
     if tier=='guest' then
@@ -6454,8 +6457,8 @@ field_submit = function(value, id)
     if auction_draft.selected then auction_draft.selected = {invalid=true} end
     auction_draft.item = value
   elseif id == 'setup.code' then
-    -- Codes carry no spaces, and a paste out of a browser very often brings one along.
-    setup_draft.code = value:gsub('%s', '');host.ui_tools.pair_feedback=nil
+    local code, issue=host.ui_tools.setup_code(value)
+    setup_draft.code = code or value:match('^%s*(.-)%s*$');host.ui_tools.pair_feedback=issue
   elseif id == 'wish.item' then
     wish_draft.item = value;wish_draft.editing=false;wish_draft.priority=2;host.ui_tools.draft.ceiling='off';window_armed=nil
   elseif id == 'item.name' then
@@ -6557,12 +6560,12 @@ host.ui_tools.present=function(tab,tier,rows,freshness)
     host.ui_tools.observation_at=os.time();host.ui_tools.observation_name=self_name()
   end
   if tab=='windows' then
-    rows=host.ui_tools.hnm.rows({targets=hud_state.windows,world=tostring(settings.world),now_ms=os.time()*1000,freshness=freshness,
+    rows=host.ui_tools.hnm.rows({followed_hunt=settings.followed_hunt,targets=hud_state.windows,world=tostring(settings.world),now_ms=os.time()*1000,freshness=freshness,
       search_value=field_lib.id()=='hnm.search' and field_lib.value() or nil,
       search_display=field_lib.id()=='hnm.search' and field_lib.display() or nil,search_focused=field_lib.id()=='hnm.search'},rows)
   end
   return host.ui_tools.surfaces.present({detail_layout=host.ui_tools.detail_layout,hnm_presented=tab=='windows',tab=tab,tier=tier,hud=hud_state,name=self_name() or 'Adventurer',now=os.time(),
-    world=tostring(settings.world),shell=tier=='member' and shell_label() or 'Not linked',board=board_view,
+    world=tostring(settings.world),shell=tier=='member' and shell_label() or 'Not linked',board=board_view,community_tools=settings.community_tools==true,
     focused=board_view~=nil or drop_draft.open or (tab=='auctions' and (auction_draft.open or auction_draft.bid_id)) or host.ui_tools.pf_focused,
     observation=host.ui_tools.observation,preview=host.ui_tools.job_preview and host.ui_tools.job_preview.name==self_name() and host.ui_tools.job_preview or nil,feedback=host.ui_tools.job_feedback,
     jobs_rows=tab=='me' and tier=='member' and view.myjobs_rows() or nil,freshness=freshness,search_row=search[1],search_value=query,role_matches=host.ui_tools.pf_composer.matches},rows)
@@ -6633,8 +6636,9 @@ host.ui_tools.make_activity=function()
     listings=function() return hud_state.pf and hud_state.pf.listings or {} end,
     request=host.ui_tools.recruitment.request,
     interval=function() return math.max(15,tonumber(settings.recruitment_refresh_interval) or 30) end,
-    enabled=function() return settings.live_recruitment~=false and not is_unconfigured() and self_name()~=nil end,
+    enabled=function() return settings.community_tools==true and settings.live_recruitment~=false and not is_unconfigured() and self_name()~=nil end,
     notify=function(kind,message,id)
+      if settings.community_tools~=true then return end
       local target=id and ('listing:'..id) or (kind=='notify_party' and 'party' or 'invites')
       host.ui_tools.notify(message,settings[kind]~=false,log,{id='activity:'..target,label='Open'})
     end,
@@ -6651,7 +6655,7 @@ host.ui_tools.local_activity=function(now)
     host.ui_tools.attendance.reset()
     if host.ui_tools.chat_prefill.pending and host.ui_tools.chat_prefill.pending.owner~=self_name() then host.ui_tools.chat_prefill.pending=nil end
   end
-  host.ui_tools.activity.party(now)
+  if settings.community_tools==true then host.ui_tools.activity.party(now) end
   local ok,message=host.ui_tools.chat_prefill.poll(host,function(action,name)
     if action~='kick' then return true end
     for _,member in ipairs(client_reader.members()) do if member.own_party and member.name==name then return true end end
@@ -6797,6 +6801,14 @@ local function window_action(id)
   if not (window_armed and window_armed.action == id) then
     window_armed = nil
   end
+  if id:sub(1,10)=='hnm:watch:' then
+    local name=id:sub(11)
+    if name=='' then settings.followed_hunt='';save_settings();window_refresh();return end
+    for _,target in ipairs(hud_state.windows or {}) do
+      if target.name==name then settings.followed_hunt=name;save_settings();window_refresh();return end
+    end
+    return
+  end
   local hnm_intent=host.ui_tools.hnm.action(id)
   if hnm_intent then
     if hnm_intent.kind=='setup' then open_in_browser('/shells/'..tostring(settings.shell_slug)..'/hnm?tab=manage')
@@ -6932,6 +6944,11 @@ local function window_action(id)
     host.ui_tools.notice_preferences=false
     host.ui_tools.notice_detail=nil
     window_tab='settings';board_view='notifications'
+  elseif id=='settings:community' then
+    settings.community_tools=settings.community_tools~=true
+    host.ui_tools.activity=host.ui_tools.make_activity()
+    host.ui_tools.preference_section='background'
+    save_settings()
   elseif id=='settings' then
     window_tab='settings';board_view=nil
   elseif id:sub(1, 4) == 'nav:' then
@@ -7208,6 +7225,12 @@ local function window_action(id)
       host.ui_tools.pf_composer.pick(pf_draft,value,window_tab=='lfg' and 'LFG' or 'LFM')
     elseif which == 'theme' then
       do_theme(value)
+    elseif which == 'background_opacity' then
+      local opacity=tonumber(value)
+      if opacity and opacity>=20 and opacity<=100 and opacity%10==0 then
+        settings.background_opacity=opacity
+        save_settings()
+      end
     elseif which == 'auction.window' then
       auction_draft.pool = value == AUCTION_WINDOWS[1]
     end
@@ -7459,7 +7482,7 @@ end
 host.ui_tools.dispatch_action=function(id)
   host.ui_tools.route_page=window_page
   local local_action=id=='close' or id=='mini' or id=='settings' or id=='notifications' or id=='signin'
-    or id=='pf:back' or id=='connection:cancel' or id=='attendance:back'
+    or id:sub(1,10)=='hnm:watch:' or id=='settings:community' or id=='pf:back' or id=='connection:cancel' or id=='attendance:back'
     or id=='attendance:cancel' or id=='attendance:cancel-review' or id=='pf:cancel-review'
     or id=='tools:plans-cancel' or id=='tools:pull-cancel' or id=='wish:cancel'
     or id=='pf:cancel' or id=='drop:cancel' or id=='auc:cancel' or id=='bidcancel'

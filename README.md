@@ -4,20 +4,20 @@ Lootryx is a community platform for Final Fantasy XI, bringing together party fi
 linkshell management, events, DKP and loot distribution at **[lootryx.com](https://lootryx.com)**.
 
 The addon brings these tools into the game through Windower 4 and Ashita v4,
-so you can find groups and keep up with your linkshell while playing.
+with DKP, auctions, events and attendance at the center of the default interface.
 
 ## Download
 
 | Windower 4 | Ashita v4 |
 | --- | --- |
-| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.31/Lootryx-v0.40.31-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.31/Lootryx-v0.40.31-Ashita.zip)** |
+| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.32/Lootryx-v0.40.32-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.32/Lootryx-v0.40.32-Ashita.zip)** |
 | `//lua load lootryx` | `/addon load lootryx` |
 
 Extract the ZIP and copy its `lootryx` folder into your loader's `addons` folder.
 Each download includes installation instructions for that loader. Both contain the
 same shared addon runtime, which detects Windower or Ashita automatically.
 
-[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.31)
+[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.32)
  · [Full installation guide](docs/INSTALL.md)
 
 ![Lootryx Home with auction activity, recruitment and separate DKP balances](docs/screenshots/01-home.png)
@@ -25,8 +25,9 @@ same shared addon runtime, which detects Windower or Ashita automatically.
 *Addon previews shown with demo data. These use the shared Lua layouts rendered in a
 browser; native fonts and rendering may differ.*
 
-## Find players and parties
+## Optional party finding
 
+Enable Community tools in Settings to show Find. It is off by default.
 Post your availability or recruit members for your next run. Browse players and parties,
 filter by activity and role, and specify how many tanks, healers, support or damage
 dealers your party needs. Lootryx recruitment is separate from your actual game party.
@@ -44,7 +45,11 @@ Prepare tells and party commands, then review and send them yourself.
 - **Events and attendance:** View events and capture attendance during an open check-in.
   Authorized officers can start scheduled or unscheduled events and manage check-in.
   Capture records attendance; review and scoring are separate.
-- **HNM windows:** View tracked targets and manually report a witnessed time of death.
+- **HNM windows:** Follow a tracked hunt in the compact overlay with an hours, minutes
+  and seconds countdown. Manually report a witnessed time of death and refresh to
+  retrieve updated window records. The overlay does not detect spawns or kills.
+- **Appearance:** Adjust background opacity in Settings. The compact header identifies
+  your connected linkshell.
 - **Notifications:** Follow supported auction, recruitment, party and check-in updates.
   Delivery depends on the relevant refresh settings and successful service requests.
 

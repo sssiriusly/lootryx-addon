@@ -6,12 +6,13 @@ function M.target(group)
   return targets[group]
 end
 
-function M.describe(active, tier, counts, board)
+function M.describe(active, tier, counts, board, community)
   counts = counts or {}
   local group = active
   if active == 'lfg' or active == 'lfm' or active == 'shells' then group = 'find' end
   if active == 'shell' or active == 'auctions' or active == 'windows' then group = 'linkshell' end
-  local primary = { { id = 'home', label = 'Home' }, { id = 'lfg', label = 'Find' } }
+  local primary = { { id = 'home', label = 'Home' } }
+  if community~=false then primary[#primary+1]={id='lfg',label='Find'} end
   if tier == 'member' then primary[#primary + 1] = { id = 'shell', label = 'Linkshell' } end
   primary[#primary + 1] = { id = 'me', label = 'Me' }
   primary[#primary + 1] = { id = 'settings', label = 'Settings' }

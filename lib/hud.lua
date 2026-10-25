@@ -207,7 +207,7 @@ local function active_window(windows, now_ms)
     if type(row) == 'table' then
       local status = safe_str(row.status, '')
       local rank, at
-      if status == 'OPEN' then
+      if status == 'OPEN' or ((status=='WAITING' or status=='PENDING') and safe_num(row.openAtMs,0)<=now_ms and safe_num(row.closeAtMs,0)>now_ms) then
         rank, at = 1, safe_num(row.closeAtMs, 0)
       else
         rank, at = 2, safe_num(row.openAtMs, 0)
@@ -319,7 +319,11 @@ local function watch_block(row, rank, at, now_ms)
   if zone ~= '' then
     lines[#lines + 1] = tint(C.dim, zone)
   end
-  if rank == 1 then
+  if rank==3 then
+    lines[#lines+1]=tint(C.dim,'Window elapsed, refresh HNM')
+  elseif rank==4 then
+    lines[#lines+1]=tint(C.dim,'Window timing unavailable')
+  elseif rank == 1 then
     -- Merged, so the open and pending states are the same height. "left" rather than "closes in"
     -- keeps it inside the box at `2h 15m`, where the longer verb would overflow.
     lines[#lines + 1] = tint(C.good, 'WINDOW OPEN') .. tint(C.dim, ', ') .. tint(C.bright, M.format_countdown(seconds_until(at, now_ms))) .. tint(C.dim, ' left')
@@ -577,6 +581,27 @@ function M.build_lines(state, now_ms)
     end
   end
 
+  -- A deliberately followed hunt stays visible beside higher-priority alerts.
+  local followed
+  if type(state.followed_hunt)=='string' and state.followed_hunt~='' then
+    for _,row in ipairs(state.windows or {}) do
+      if row.name==state.followed_hunt then
+        local opens,closes=safe_num(row.openAtMs,0),safe_num(row.closeAtMs,0)
+        local rank,at=4,0
+        if (row.status=='WAITING' or row.status=='PENDING') and opens>now_ms then rank,at=2,opens
+        elseif (row.status=='OPEN' or row.status=='WAITING' or row.status=='PENDING') and closes>now_ms then rank,at=1,closes
+        elseif row.status=='MISSED' or closes>0 and closes<=now_ms then rank=3 end
+        followed=watch_block(row,rank,at,now_ms)
+        if rank==1 or rank==2 then
+          local seconds=math.max(0,math.ceil((at-now_ms)/1000))
+          followed[#followed]=tint(C.dim,rank==1 and 'Closes in ' or 'Opens in ')..tint(C.bright,string.format('%02d:%02d:%02d',math.floor(seconds/3600),math.floor(seconds/60)%60,seconds%60))
+        end
+        break
+      end
+    end
+    if not followed then followed={tint(C.bright,state.followed_hunt),tint(C.dim,'Refresh HNM to load window')} end
+    if mode=='watch' or not mode then focus=followed;followed=nil;mode='watch' end
+  end
   local status = status_line(state)
 
   if not mode and not status then
@@ -588,6 +613,13 @@ function M.build_lines(state, now_ms)
   local lines = {}
   for _, line in ipairs(focus or {}) do
     lines[#lines + 1] = line
+  end
+  if mode=='watch' and state.followed_hunt and state.followed_hunt~='' and type(state.dkp)=='table' then
+    lines[#lines+1]=state.dkp.splitVisible and tint(C.dim,'DKP: see //lootryx dkp') or (tint(C.dim,'DKP ')..tint(C.gold,tostring(safe_num(state.dkp.headline,0))))
+  end
+  if followed then
+    if #lines>0 then lines[#lines+1]='' end
+    for _,line in ipairs(followed) do lines[#lines+1]=line end
   end
   if status then
     -- A blank spacer only when there is something above it to separate from, so an overlay showing

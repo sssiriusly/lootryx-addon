@@ -129,7 +129,7 @@ function M.home(ctx, old)
     urgent[#urgent+1]={kind='banner',title=soonest.itemName or 'Auction',subtitle=remaining..(bid and (' / Your offer: '..tostring(bid.percent or bid.amount or '?')..(bid.percent and '%' or ' DKP')) or ' / No recorded offer'),
       action=action(seconds>0 and ('editbid:'..soonest.id) or 'tab:auctions',seconds>0 and (type(bid)=='table' and 'Change bid' or 'Place bid') or 'View auction')}
   end
-  for _,p in ipairs(h.pf and h.pf.listings or {}) do
+  for _,p in ipairs(ctx.community_tools~=false and h.pf and h.pf.listings or {}) do
     if p.isMine and p.mode=='LFM' and p.id then
       urgent[#urgent+1]={title='Your party is recruiting',subtitle=tostring(p.members or 0)..' / '..tostring(p.maxSize or 6)..' members',action=action('pfdetail:'..p.id,'Manage party')}
     elseif p.isMember and p.mode=='LFM' and p.id then
@@ -145,9 +145,9 @@ function M.home(ctx, old)
   for i=1,#character,3 do out[#out+1]=metrics({character[i],character[i+1],character[i+2]}) end
   -- The renderer reserves the last docked row on every page.
   out[#out+1]={kind='cards',dock=true,items={
-    {title='Find a group',subtitle=h.pf and ((h.pf.lfg or 0)..' looking / '..(h.pf.lfm or 0)..' recruiting') or 'Players on your world',art='pennant',action=action('refresh_pf','Browse players')},
+    ctx.community_tools==false and (ctx.tier=='member' and {title='Auctions',subtitle='Open auctions, your bids and results',art='coffer',action=action('tab:auctions','View auctions')} or {title='Connect your character',subtitle='Access your linkshell DKP and auctions',art='claim',action=action('signin','Connect')}) or {title='Find a group',subtitle=h.pf and ((h.pf.lfg or 0)..' looking / '..(h.pf.lfm or 0)..' recruiting') or 'Players on your world',art='pennant',action=action('refresh_pf','Browse players')},
     ctx.tier=='member' and {title='Your events',subtitle=h.denied and h.denied.events and 'Your role cannot read events.' or 'Upcoming linkshell activities',art='calendar',action=not (h.denied and h.denied.events) and action('board:events','View events') or nil}
-      or {title='Find your linkshell',subtitle='Communities on '..ctx.world,art='pearl',action=action('refresh_shells','Browse linkshells')}
+      or (ctx.community_tools~=false and {title='Find your linkshell',subtitle='Communities on '..ctx.world,art='pearl',action=action('refresh_shells','Browse linkshells')} or nil)
   }}
   return out
 end

@@ -280,7 +280,13 @@ local function rgb(c, name)
 end
 
 local function rect(c, id, x, y, w, h, colour, alpha)
-  c.rects[#c.rects + 1] = { id = id, x = x, y = y, w = w, h = h, colour = colour, alpha = alpha or 240 }
+  local background = id=='panel' or id=='title' or id=='footer' or id:match('^bg_') or id:match('^fbg_') or id:match('^sbg_') or (id:match('^surface_') and w>4 and h>4)
+  alpha = alpha or 240
+  if background then
+    if c.opaque then alpha=255
+    elseif c.background_opacity then alpha=math.floor((id=='panel' and 255 or alpha)*c.background_opacity/100+0.5) end
+  end
+  c.rects[#c.rects + 1] = { id = id, x = x, y = y, w = w, h = h, colour = colour, alpha = alpha }
 end
 
 --[[
@@ -506,7 +512,7 @@ end
   glance where their typing is going.
 ]]
 local function draw_navigation(c, state, active, top)
-  local primary, secondary, group, selected = M.navigation.describe(active, state.tier, state.counts, state.board)
+  local primary, secondary, group, selected = M.navigation.describe(active, state.tier, state.counts, state.board, state.community_tools)
   local bottom = draw_tabs(c, primary, group, top, 'nav:')
   if #secondary > 0 then bottom = draw_tabs(c, secondary, selected, bottom) end
   return bottom
@@ -611,6 +617,19 @@ local function draw_choices(c,index,y,row)
 end
 
 -- Compact navigation/actions and feedback are not record rows.
+local function draw_slider(c,index,y,row)
+  local value=math.max(20,math.min(100,tonumber(row.value) or 90))
+  label(c,'slider_title_'..index,PAD,y+7,(row.title or 'Background opacity')..'  '..value..'%',rgb(c,'bright'),SIZE_SUB)
+  local x=PAD+240;local width=M.WIDTH-PAD-x;local step=width/9
+  rect(c,'slider_track_'..index,x,y+17,width,3,rgb(c,'line'),255)
+  for i=0,8 do
+    local v=20+i*10;local px=x+i*step
+    rect(c,'slider_tick_'..index..'_'..i,px+step/2-2,y+12,4,13,rgb(c,v<=value and 'accent' or 'line'),255)
+    c.regions[#c.regions+1]={id='set:background_opacity:'..v,x=px,y=y+3,w=step,h=28,enabled=true}
+  end
+  label(c,'slider_hint_'..index,PAD,y+37,'Click the scale to preview. Text and controls stay readable.',rgb(c,'dim'),SIZE_FOOT)
+  return y+60
+end
 local function draw_bar(c,index,y,row)
   local right=M.WIDTH-PAD
   local left=PAD
@@ -925,6 +944,7 @@ M.MAX_ROWS = 12
 function M.row_height(row)
   local kind = type(row) == 'table' and row.kind or nil
   if kind=='text' then return 23
+  elseif kind=='slider' then return 60
   elseif kind=='record' then return 60
   elseif kind=='columns' then return 28
   elseif kind=='pagehead' then return 56
@@ -957,6 +977,8 @@ function M.build(state, measure, room)
   room = math.min(tonumber(room) or 680, state.surface_layout and M.MIN_HEIGHT or 680)
   local theme = M.theme(state.theme)
   local c = canvas_for(theme, measure, state.hover)
+  c.background_opacity=state.background_opacity~=nil and math.max(20,math.min(100,tonumber(state.background_opacity) or 90)) or nil
+  c.opaque=state.opaque==true
 
   local counts = state.counts or {}
   local tabs = M.tabs_for(state.tier, counts)
@@ -1110,8 +1132,11 @@ function M.build(state, measure, room)
     y = y + ROW_H
   else
     for index, row in ipairs(rows) do
+      c.opaque=state.opaque==true or row.opaque==true
       if row.kind=='record' or row.kind=='columns' or row.kind=='pagehead' or row.kind=='cards' or row.kind=='metrics' or row.kind=='jobgrid' or row.kind=='banner' or row.kind=='toggle' or row.kind=='rolecounts' then
         y=M.draw_surface(c,index,y,row)
+      elseif row.kind == 'slider' then
+        y=draw_slider(c,index,y,row)
       elseif row.kind == 'text' then
         label(c,'text_'..index,PAD+6,y+4,row.text or '',rgb(c,row.accent or 'dim'),SIZE_SUB);y=y+23
       elseif row.kind == 'finderbar' then
@@ -1134,6 +1159,7 @@ function M.build(state, measure, room)
     end
   end
 
+  c.opaque=state.opaque==true
   if footer then
     if footer.kind=='actions' then draw_actions(c,'fixed',height-FOOT_H-footer_h,footer)
     elseif footer.kind=='cards' then M.draw_surface(c,'fixed',height-FOOT_H-footer_h,footer)

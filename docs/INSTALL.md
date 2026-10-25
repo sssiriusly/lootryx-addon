@@ -2,13 +2,14 @@
 
 ## Windower 4
 
-1. Download `Lootryx-v0.40.31-Windower.zip` from the README and extract it.
+1. Download `Lootryx-v0.40.32-Windower.zip` from the README and extract it.
 2. Copy its `lootryx` folder into Windower's `addons`
    folder. The entry point must be `addons/lootryx/lootryx.lua`, not nested twice.
 3. Keep `lib/` and `assets/` beside `lootryx.lua`.
 4. In game, run `//lua load lootryx`, then `//lootryx window`.
 5. Sign in at https://lootryx.com and obtain an addon pairing code. In the addon,
-   open Me > Connection and follow the pairing flow. Treat the code as private.
+   open Me > Connection and paste the code or complete setup command. Treat it as private.
+   Alternatively, use `//lootryx setup CODE` in game. Use a fresh code if it expires.
 6. Use `//lootryx status` and `//lootryx selftest` to inspect setup problems.
 
 No Node.js, separate executable or background helper is required at runtime.
@@ -18,10 +19,12 @@ Settings are created by the addon. Do not copy a development settings template.
 
 ## Ashita v4
 
-Download `Lootryx-v0.40.31-Ashita.zip` from the README and extract it.
+Download `Lootryx-v0.40.32-Ashita.zip` from the README and extract it.
 Copy its `lootryx` folder into Ashita's `addons` directory. Load with
 `/addon load lootryx`, then `/lootryx window` and `/lootryx selftest`.
-Use Me > Connection to pair. Windower credentials are not silently imported.
+Use Me > Connection to pair, or run `/lootryx setup CODE` in game.
+Use one slash on Ashita and two on Windower. A setup code is not a legacy link code.
+Windower credentials are not silently imported.
 The host uses Ashita's supplied common, ImGui, Direct3D, FFI, JSON and socket libraries.
 
 ## Updating
@@ -32,7 +35,9 @@ Reload afterwards. Never upload these settings directories to GitHub.
 
 ## First-use checks
 
-- Find: distinguish Players looking for a party from Parties recruiting members.
+- Optional Find: enable Community tools in Settings, then browse Players or Parties.
+- Compact overlay: use Linkshell > HNM > Follow beside your hunt, then minimize.
+- Appearance: set Background opacity in Settings.
 - Auctions: inspect the selected wallet, minimum, offer and confirmation before bidding.
 - Attendance: an officer must open check-in before capture; use the roster preview.
 - Notifications: inspect refresh and chat preferences. Offline clients cannot promise
