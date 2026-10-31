@@ -123,3 +123,7 @@ other servers' rules. See
 [validation](VALIDATION.md) for automated results and the remaining two-client,
 real-loader acceptance steps. Third-party rights are listed in
 [the notices](../THIRD-PARTY-NOTICES.md).
+
+## Reviewed attendance sessions
+
+`lib/camp-attendance.lua` polls the linked shell service every 30 seconds with failure backoff. It displays server-timed response windows, chat notices and overlay prompts. Joining, leaving, Ready/AFK responses, officer exceptions, ending and posting are explicit service actions. No gameplay action or attendance response is automated. Immediate availability checks award no points. Periodic attendance estimates become spendable only after explicit officer review and posting. These attestations are not proof of continuous game presence.

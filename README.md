@@ -10,14 +10,14 @@ with DKP, auctions, events and attendance at the center of the default interface
 
 | Windower 4 | Ashita v4 |
 | --- | --- |
-| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.32/Lootryx-v0.40.32-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.32/Lootryx-v0.40.32-Ashita.zip)** |
+| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.33/Lootryx-v0.40.33-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.33/Lootryx-v0.40.33-Ashita.zip)** |
 | `//lua load lootryx` | `/addon load lootryx` |
 
 Extract the ZIP and copy its `lootryx` folder into your loader's `addons` folder.
 Each download includes installation instructions for that loader. Both contain the
 same shared addon runtime, which detects Windower or Ashita automatically.
 
-[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.32)
+[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.33)
  · [Full installation guide](docs/INSTALL.md)
 
 ![Lootryx Home with auction activity, recruitment and separate DKP balances](docs/screenshots/01-home.png)
@@ -45,6 +45,7 @@ Prepare tells and party commands, then review and send them yourself.
 - **Events and attendance:** View events and capture attendance during an open check-in.
   Authorized officers can start scheduled or unscheduled events and manage check-in.
   Capture records attendance; review and scoring are separate.
+- **Ready checks:** Join a scheduled or unscheduled attendance session and answer Ready or AFK on the addon or website. Officers review LG, Expo or attendance-only rules and the wallet before starting, then review and post points once. Immediate availability checks award no DKP.
 - **HNM windows:** Follow a tracked hunt in the compact overlay with an hours, minutes
   and seconds countdown. Manually report a witnessed time of death and refresh to
   retrieve updated window records. The overlay does not detect spawns or kills.

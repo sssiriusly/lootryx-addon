@@ -2,7 +2,7 @@
 
 ## Windower 4
 
-1. Download `Lootryx-v0.40.32-Windower.zip` from the README and extract it.
+1. Download `Lootryx-v0.40.33-Windower.zip` from the README and extract it.
 2. Copy its `lootryx` folder into Windower's `addons`
    folder. The entry point must be `addons/lootryx/lootryx.lua`, not nested twice.
 3. Keep `lib/` and `assets/` beside `lootryx.lua`.
@@ -19,7 +19,7 @@ Settings are created by the addon. Do not copy a development settings template.
 
 ## Ashita v4
 
-Download `Lootryx-v0.40.32-Ashita.zip` from the README and extract it.
+Download `Lootryx-v0.40.33-Ashita.zip` from the README and extract it.
 Copy its `lootryx` folder into Ashita's `addons` directory. Load with
 `/addon load lootryx`, then `/lootryx window` and `/lootryx selftest`.
 Use Me > Connection to pair, or run `/lootryx setup CODE` in game.
@@ -39,7 +39,7 @@ Reload afterwards. Never upload these settings directories to GitHub.
 - Compact overlay: use Linkshell > HNM > Follow beside your hunt, then minimize.
 - Appearance: set Background opacity in Settings.
 - Auctions: inspect the selected wallet, minimum, offer and confirmation before bidding.
-- Attendance: an officer must open check-in before capture; use the roster preview.
+- Attendance sessions: run `//lootryx camp` on Windower or `/lootryx camp` on Ashita. Join explicitly, then answer Ready or AFK when prompted. Officers start, end, correct and review before posting points. Legacy snapshot capture still requires an open event check-in.
 - Notifications: inspect refresh and chat preferences. Offline clients cannot promise
   immediate delivery of changes they have not fetched.
 - Macros: back up game macros and correctly identify the active book before downloads.

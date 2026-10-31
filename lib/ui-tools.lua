@@ -107,6 +107,7 @@ function M.preference_rows(settings)
   if section=='background' then
   option('live_auctions','Check auctions','Every '..tostring(settings.auction_refresh_interval)..'s while enabled')
   if settings.community_tools~=false then option('live_recruitment','Check recruitment and invitations','Every '..tostring(settings.recruitment_refresh_interval)..'s while enabled') end
+  option('live_camps','Check HNM camps','Every 30s. Answers are always explicit.')
   option('live_attendance','Check event attendance','Every '..tostring(settings.attendance_refresh_interval or 30)..'s while enabled')
   option('notify_checkin','Attendance check-in alerts','Opened or closed check-in, after a successful background or manual refresh')
   elseif section=='auctions' then

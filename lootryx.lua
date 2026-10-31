@@ -104,7 +104,7 @@ end
 local _addon = host.metadata
 _addon.name = 'Lootryx'
 _addon.author = 'Sirius'
-_addon.version = '0.40.32'
+_addon.version = '0.40.33'
 _addon.commands = { 'lootryx', 'lx' }
 
 local config = host.config
@@ -230,6 +230,7 @@ local defaults = {
   community_tools = false,
   followed_hunt = '',
   live_attendance = true,
+  live_camps = true,
   attendance_refresh_interval = 30,
   notify_checkin = true,
   recruitment_refresh_interval = 30,
@@ -3789,6 +3790,11 @@ local function hud_render()
 
   hud_state.followed_hunt=settings.followed_hunt
   local lines, mode, width = hud_lib.build_lines(hud_state, os.time() * 1000)
+  local ready_alert = host.ui_tools.camp and host.ui_tools.camp.alert()
+  if ready_alert then
+    table.insert(lines,1,'READY CHECK: '..ready_alert.subtitle)
+    table.insert(lines,2,'Open attendance: //lootryx camp')
+  end
   if #lines == 0 then
     -- "Draws nothing when there is nothing to say" (PRD §5): an empty frame is worse than no frame.
     if hud_box then
@@ -4424,6 +4430,7 @@ local HELP_GROUPS = {
     {
       '  //lootryx events              what is scheduled, and whether a check-in is open',
       '  //lootryx signup <n> <going|late|maybe|out>   answer event n, as the job you are on',
+      '  //lootryx camp                HNM camp checks, join, ready/afk and officer review',
       '  //lootryx windows             tracked HNM targets, next window + a countdown',
       '  //lootryx bounties            what the shell is paying DKP to have brought in',
       '  //lootryx loot                the most recent drops and where they went',
@@ -6271,6 +6278,7 @@ local function settings_rows(tier)
 end
 
 window_rows_for = function(tab, tier)
+  if board_view=='camp' then return host.ui_tools.camp.rows() end
   if board_view=='attendance' then return host.ui_tools.attendance.rows() end
   if board_view=='network' then
     return {{kind='pagehead',title='Network timing',actions={{id='settings',label='Back'}}},
@@ -6416,7 +6424,9 @@ end
 ]]
 field_submit = function(value, id)
   value = tostring(value or ''):gsub('^%s+', ''):gsub('%s+$', '')
-  if id:sub(1,11)=='attendance.' then
+  if id:sub(1,5)=='camp.' then
+    host.ui_tools.camp.set_field(id:sub(6),value)
+  elseif id:sub(1,11)=='attendance.' then
     host.ui_tools.attendance.set_field(id:sub(12),value)
   elseif id == 'hnm.search' then
     host.ui_tools.hnm.set_search(value);window_page=1
@@ -6564,11 +6574,14 @@ host.ui_tools.present=function(tab,tier,rows,freshness)
       search_value=field_lib.id()=='hnm.search' and field_lib.value() or nil,
       search_display=field_lib.id()=='hnm.search' and field_lib.display() or nil,search_focused=field_lib.id()=='hnm.search'},rows)
   end
-  return host.ui_tools.surfaces.present({detail_layout=host.ui_tools.detail_layout,hnm_presented=tab=='windows',tab=tab,tier=tier,hud=hud_state,name=self_name() or 'Adventurer',now=os.time(),
+  if tab=='windows' and not board_view then table.insert(rows,1,{kind='toolbar',title='HNM camp attendance',actions={{id='camp:open',label='Open camps'}}}) end
+  local presented=host.ui_tools.surfaces.present({detail_layout=host.ui_tools.detail_layout,hnm_presented=tab=='windows',tab=tab,tier=tier,hud=hud_state,name=self_name() or 'Adventurer',now=os.time(),
     world=tostring(settings.world),shell=tier=='member' and shell_label() or 'Not linked',board=board_view,community_tools=settings.community_tools==true,
     focused=board_view~=nil or drop_draft.open or (tab=='auctions' and (auction_draft.open or auction_draft.bid_id)) or host.ui_tools.pf_focused,
     observation=host.ui_tools.observation,preview=host.ui_tools.job_preview and host.ui_tools.job_preview.name==self_name() and host.ui_tools.job_preview or nil,feedback=host.ui_tools.job_feedback,
     jobs_rows=tab=='me' and tier=='member' and view.myjobs_rows() or nil,freshness=freshness,search_row=search[1],search_value=query,role_matches=host.ui_tools.pf_composer.matches},rows)
+  if host.ui_tools.camp and board_view~='camp' then local alert=host.ui_tools.camp.alert();if alert then table.insert(presented,1,alert) end end
+  return presented
 end
 host.ui_tools.chat_prefill=loadfile(host.addon_path..'lib/chat-prefill.lua')()
 host.ui_tools.recruitment=loadfile(host.addon_path..'lib/recruitment.lua')().new({
@@ -6630,6 +6643,12 @@ host.ui_tools.attendance=loadfile(host.addon_path..'lib/attendance.lua')().new({
     if board_view=='attendance' or reset_page~=false then window_refresh() end
   end,
 })
+host.ui_tools.camp=loadfile(host.addon_path..'lib/camp-attendance.lua')().new({
+  request=host.ui_tools.recruitment.request,field=field_rows,now=os.time,
+  enabled=function() return settings.live_camps~=false and not is_unconfigured() and self_name()~=nil end,
+  notify=function(message) host.ui_tools.notify(message,settings.notify_checkin~=false,log,{id='camp:open',label='HNM camp'}) end,
+  redraw=function() if board_view=='camp' or panel_lib.visible() then window_refresh() end end,
+})
 host.ui_tools.make_activity=function()
   return loadfile(host.addon_path..'lib/activity-notices.lua')().new({
     name=self_name,party=function() return client_reader.members() end,
@@ -6652,7 +6671,7 @@ host.ui_tools.activity_name=self_name()
 host.ui_tools.local_activity=function(now)
   if host.ui_tools.activity_name~=self_name() then
     host.ui_tools.activity_name=self_name();host.ui_tools.activity=host.ui_tools.make_activity()
-    host.ui_tools.attendance.reset()
+    host.ui_tools.attendance.reset();host.ui_tools.camp.reset()
     if host.ui_tools.chat_prefill.pending and host.ui_tools.chat_prefill.pending.owner~=self_name() then host.ui_tools.chat_prefill.pending=nil end
   end
   if settings.community_tools==true then host.ui_tools.activity.party(now) end
@@ -6664,6 +6683,7 @@ host.ui_tools.local_activity=function(now)
   if ok~=nil then host.ui_tools.recruitment.feedback=message;log(message);window_refresh() end
 end
 function say.do_refresh_recruitment(now) return host.ui_tools.activity.poll(now) end
+function say.do_refresh_camps(now) return host.ui_tools.camp.poll(now) end
 function say.do_refresh_attendance(now) return host.ui_tools.attendance.poll(now) end
 host.ui_tools.board_key=function() return board_view end
 host.ui_tools.reset_connection=function()
@@ -6680,7 +6700,7 @@ host.ui_tools.reset_connection=function()
   pf_draft.roleSlots=nil;pf_draft.maxSize=nil;pf_draft.counted=false
   host.ui_tools.find_pages={};host.ui_tools.last_find=nil
   host.ui_tools.activity=host.ui_tools.make_activity()
-  host.ui_tools.attendance.reset()
+  host.ui_tools.attendance.reset();host.ui_tools.camp.reset()
   host.ui_tools.attendance_opened=nil
   host.ui_tools.chat_prefill.pending=nil
   host.ui_tools.job_preview=nil;host.ui_tools.job_feedback=nil
@@ -6772,6 +6792,10 @@ local function window_action(id)
   -- Clicking anywhere that is not a text box, or its own suggestion list, hands the keyboard back.
   -- A box that kept focus while you clicked off to another tab would eat the keys you then used to
   -- move, with nothing on screen still showing a caret to explain it.
+  if id=='camp:back' then board_view=nil;window_tab='windows';window_refresh();return end
+  if id:sub(1,5)=='camp:' then
+    window_tab='shell';board_view='camp';host.ui_tools.camp.action(id);window_page=1;window_refresh();return
+  end
   if id=='cmd:snap' then id='attendance:open' end
   if id=='attendance:website' then
     local eventId=host.ui_tools.attendance.capture_target()
@@ -6939,7 +6963,7 @@ local function window_action(id)
   elseif id:sub(1,13)=='notices:read:' then host.ui_tools.mark_read(id:sub(14))
   elseif id:sub(1,7)=='notice:' then
     local key=id:sub(8)
-    if key=='live_auctions' or key=='notify_new_auctions' or key=='notify_auction_results' or key=='notify_auction_deadline' or key=='live_recruitment' or key=='notify_party' or key=='notify_recruitment' or key=='notify_invites' or key=='notify_ready' or key=='live_attendance' or key=='notify_checkin' then settings[key]=settings[key]==false;save_settings() end
+    if key=='live_auctions' or key=='notify_new_auctions' or key=='notify_auction_results' or key=='notify_auction_deadline' or key=='live_recruitment' or key=='notify_party' or key=='notify_recruitment' or key=='notify_invites' or key=='notify_ready' or key=='live_camps' or key=='live_attendance' or key=='notify_checkin' then settings[key]=settings[key]==false;save_settings() end
   elseif id=='notifications' then
     host.ui_tools.notice_preferences=false
     host.ui_tools.notice_detail=nil
@@ -7280,7 +7304,8 @@ local function window_action(id)
     -- replaces rather than appends.
     local which = id:sub(7)
     local current
-    if which:sub(1,11)=='attendance.' then current=host.ui_tools.attendance.field_value(which:sub(12))
+    if which:sub(1,5)=='camp.' then current=host.ui_tools.camp.field_value(which:sub(6))
+    elseif which:sub(1,11)=='attendance.' then current=host.ui_tools.attendance.field_value(which:sub(12))
     elseif which == 'surface.search' then current=host.ui_tools.surfaces.search[window_tab] or ''
     elseif which == 'hnm.search' then current=host.ui_tools.hnm.search
     elseif which == 'tools.pool' then
@@ -7482,6 +7507,7 @@ end
 host.ui_tools.dispatch_action=function(id)
   host.ui_tools.route_page=window_page
   local local_action=id=='close' or id=='mini' or id=='settings' or id=='notifications' or id=='signin'
+    or id=='camp:back' or id=='camp:list' or id=='camp:cancel'
     or id:sub(1,10)=='hnm:watch:' or id=='settings:community' or id=='pf:back' or id=='connection:cancel' or id=='attendance:back'
     or id=='attendance:cancel' or id=='attendance:cancel-review' or id=='pf:cancel-review'
     or id=='tools:plans-cancel' or id=='tools:pull-cancel' or id=='wish:cancel'
@@ -7560,6 +7586,11 @@ host.register_event('addon command', function(command, ...)
       do_dkp()
     elseif command == 'standings' then
       do_standings(args)
+    elseif command == 'camp' then
+      local action=args[1] or 'open'
+      local allowed={open=true,refresh=true,join=true,leave=true,ready=true,afk=true,new=true}
+      if allowed[action] then panel_lib.show(true);window_tab='shell';board_view='camp';host.ui_tools.camp.action('camp:'..action);window_refresh()
+      else log('Use //lootryx camp [open|refresh|new|join|leave|ready|afk]. Review start and end in the window.') end
     elseif command == 'windows' then
       do_windows()
     elseif command == 'events' then
@@ -7692,7 +7723,7 @@ host.register_event('prerender', function()
       last_auto=now-settings.interval;auto_retry_at=0;auto_failures=0
     end
     if now < auto_retry_at then
-      if not say.do_refresh_live_auctions(now) and not say.do_refresh_recruitment(now) then say.do_refresh_attendance(now) end
+      if not say.do_refresh_live_auctions(now) and not say.do_refresh_recruitment(now) then if not say.do_refresh_camps(now) then say.do_refresh_attendance(now) end end
       return
     end
 
@@ -7722,6 +7753,8 @@ host.register_event('prerender', function()
       -- One bounded website refresh for auctions already being followed. Never bids or game actions.
     elseif say.do_refresh_recruitment(now) then
       -- One cooperative read; never enrolls or accepts an invitation automatically.
+    elseif say.do_refresh_camps(now) then
+      -- Reads server camp deadlines only. Never responds or awards from the client.
     elseif say.do_refresh_attendance(now) then
       -- Read check-in status only. Starting, closing and capturing require an explicit click.
     elseif settings.heartbeat == true and (now - last_heartbeat >= settings.heartbeat_interval) then
