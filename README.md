@@ -1,10 +1,11 @@
 # Lootryx Addon
 
-Lootryx is a community platform for Final Fantasy XI, bringing together party finding,
-linkshell management, events, DKP and loot distribution at **[lootryx.com](https://lootryx.com)**.
+[Lootryx](https://lootryx.com) helps Final Fantasy XI linkshells organize events,
+track attendance and DKP, distribute loot, and follow HNM spawn windows.
 
-The addon brings these tools into the game through Windower 4 and Ashita v4,
-with DKP, auctions, events and attendance at the center of the default interface.
+The addon brings your linkshell's DKP, auctions and attendance into the game,
+with support for **Windower 4 and Ashita v4**. Use the website for planning,
+administration and detailed records, and the addon while you play.
 
 ## Download
 
@@ -20,56 +21,60 @@ same shared addon runtime, which detects Windower or Ashita automatically.
 [Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.34)
  · [Full installation guide](docs/INSTALL.md)
 
-![Lootryx Home with auction activity, recruitment and separate DKP balances](docs/screenshots/01-home.png)
+![Home with an active auction and separate DKP balances](docs/screenshots/01-home.png)
 
-*Addon previews shown with demo data. These use the shared Lua layouts rendered in a
-browser; native fonts and rendering may differ.*
+*Previews use the v0.40.34 Lua window layouts and fictional demo data, rendered
+in a browser. They are not live game captures. Native fonts and Ashita's ImGui
+presentation can differ.*
 
-## Optional party finding
+## DKP and bidding
 
-Enable Community tools in Settings to show Find. It is off by default.
-Post your availability or recruit members for your next run. Browse players and parties,
-filter by activity and role, and specify how many tanks, healers, support or damage
-dealers your party needs. Lootryx recruitment is separate from your actual game party.
+Check your balances and standings, including separate DKP wallets when your
+linkshell enables them. Open an auction, check its wallet and rules, enter your
+offer, then review before submitting. The amount charged follows the auction's
+configured rules and is not necessarily your bid.
 
-Prepare tells and party commands, then review and send them yourself.
+![Review an auction offer, wallet and minimum](docs/screenshots/05-auction.png)
 
-![Players seeking a group, with jobs and role icons](docs/screenshots/02-players.png)
-![Recruitment roster with counted open roles](docs/screenshots/04-recruitment.png)
+## Camps, events and ready checks
 
-## Your linkshell, in game
+Join a session explicitly, then answer **Present and ready** or **AFK / unavailable**
+when a timed attendance check opens. You can respond through the addon or website.
+The addon never answers for you.
 
-- **Auctions:** Browse auctions, place or update bids and view results. A maximum bid
-  may differ from the final charge under your linkshell's auction rules.
-- **DKP:** Check balances and standings, including separate tracks when enabled.
-- **Events and attendance:** View events and capture attendance during an open check-in.
-  Authorized officers can start scheduled or unscheduled events and manage check-in.
-  Capture records attendance; review and scoring are separate.
-- **Ready checks:** Join a scheduled or unscheduled attendance session and answer Ready or AFK on the addon or website. Officers review LG, Expo or attendance-only rules and the wallet before starting, then review and post points once. Immediate availability checks award no DKP.
-- **HNM windows:** Follow a tracked hunt in the compact overlay with an hours, minutes
-  and seconds countdown. Manually report a witnessed time of death and refresh to
-  retrieve updated window records. The overlay does not detect spawns or kills.
-- **Appearance:** Adjust background opacity in Settings. The compact header identifies
-  your connected linkshell.
-- **Notifications:** Follow supported auction, recruitment, party and check-in updates.
-  Delivery depends on the relevant refresh settings and successful service requests.
+Officers choose the attendance rules and wallet before starting a session. After
+ending it, they review attendance, record exceptions and post the reviewed DKP.
+Estimates are not spendable points. An immediate **Ready check now** checks
+availability only and awards no DKP.
 
-Available actions follow your linkshell permissions.
+![Answer a timed attendance check](docs/screenshots/09-ready-check.png)
 
-![Auction offer with its wallet and minimum](docs/screenshots/05-auction.png)
-![Attendance roster preview before capture](docs/screenshots/06-attendance.png)
-![Tracked HNM windows and countdowns](docs/screenshots/07-hnm-windows.png)
+[Member and officer attendance walkthrough](docs/ATTENDANCE.md)
 
-## Connected to your Lootryx account
+## HNM windows and time of death
 
-Link your character to access personal and linkshell information. The website provides
-broader planning, administration and record review. The addon also offers explicit local
-macro-book upload and download tools; downloads modify local macro files after review.
+Browse tracked windows, manually report a witnessed time of death, and follow a
+hunt in the compact overlay while the main window is minimized. The overlay shows
+your linkshell and the tracked window countdown. It does not detect spawns or kills.
 
-## Install
+![Tracked HNM windows](docs/screenshots/07-hnm-windows.png)
 
-See the [installation guide](docs/INSTALL.md). Both Windower 4 and Ashita v4 have
-been tested in game.
+## Connect and customize
+
+Get a pairing code from Lootryx, open **Me > Connection**, and paste the code or
+complete setup command. Keep it private. Settings include background opacity,
+notification preferences and optional reporting controls.
+
+[Install, pair and update](docs/INSTALL.md) · [Browse all previews](docs/screenshots/README.md)
+
+## Optional tools
+
+Party finding and linkshell discovery are available through **Community tools** in
+Settings, off by default. Recruitment is separate from your actual game party.
+Tell, Invite and Kick actions prepare chat drafts for you to review and send.
+
+Local macro-book upload and download are also available. Downloads write your
+local macro files after review, with safeguards and backups.
 
 ## How the addon interacts with FFXI
 

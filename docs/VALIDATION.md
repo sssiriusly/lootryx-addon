@@ -6,17 +6,23 @@ Lootryx supports Windower 4 and Ashita v4. Both have been tested in game.
 
 ## Automated checks
 
-The v0.40.32 export passed 132 focused regression tests across nine test files,
-covering linking, onboarding, opacity, community tools, the compact hunt display,
-and Ashita host, settings and rendering behavior. All 43 Lua files also compiled
-using the installed Windower Lua runtime.
+The v0.40.34 source passed 1,214 addon harness tests. The associated website and
+service release passed 1,108 website tests and 2,242 API tests, plus workspace
+type checks, lint and production build. The public and installed addon exports
+each passed seven focused attendance tests. All 44 Lua files compiled using
+Windower's Lua 5.1 runtime.
 
-The test harness is maintained separately from this addon repository. These
-runtime tests loaded this addon export. They use fixtures and do not replace
-fresh live-client testing of this release on both loaders.
+The attendance audit covered explicit joining and responses, session switching,
+stale officer reviews, concurrent corrections, permissions and reviewed posting.
+The test harness is maintained separately from this addon repository. Its mock
+clients do not prove live game rendering, input or notification delivery.
 
-README screenshots use demo data rendered from the shared Lua layouts. Native
-fonts and rendering can differ.
+Both loaders have prior in-game testing. Fresh live-client acceptance of the
+v0.40.34 attendance changes is still outstanding on Windower and Ashita. Do not
+interpret the automated totals as completion of that acceptance.
+
+README previews use the current Lua layouts and fictional data rendered in a
+browser. They are Windower-layout previews, not Ashita ImGui or live game captures.
 
 ## Release verification
 

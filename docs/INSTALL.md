@@ -33,6 +33,8 @@ Unload the addon, back up your settings, and replace only the distributed runtim
 asset files. Preserve `data/` on Windower and Ashita's `config/lootryx/` directory.
 Reload afterwards. Never upload these settings directories to GitHub.
 
+For the complete member and officer flow, see [Attendance and ready checks](ATTENDANCE.md).
+
 ## First-use checks
 
 - Optional Find: enable Community tools in Settings, then browse Players or Parties.
