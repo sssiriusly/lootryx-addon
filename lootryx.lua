@@ -104,7 +104,7 @@ end
 local _addon = host.metadata
 _addon.name = 'Lootryx'
 _addon.author = 'Sirius'
-_addon.version = '0.40.33'
+_addon.version = '0.40.34'
 _addon.commands = { 'lootryx', 'lx' }
 
 local config = host.config

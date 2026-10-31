@@ -2,7 +2,7 @@
 
 ## Windower 4
 
-1. Download `Lootryx-v0.40.33-Windower.zip` from the README and extract it.
+1. Download `Lootryx-v0.40.34-Windower.zip` from the README and extract it.
 2. Copy its `lootryx` folder into Windower's `addons`
    folder. The entry point must be `addons/lootryx/lootryx.lua`, not nested twice.
 3. Keep `lib/` and `assets/` beside `lootryx.lua`.
@@ -19,7 +19,7 @@ Settings are created by the addon. Do not copy a development settings template.
 
 ## Ashita v4
 
-Download `Lootryx-v0.40.33-Ashita.zip` from the README and extract it.
+Download `Lootryx-v0.40.34-Ashita.zip` from the README and extract it.
 Copy its `lootryx` folder into Ashita's `addons` directory. Load with
 `/addon load lootryx`, then `/lootryx window` and `/lootryx selftest`.
 Use Me > Connection to pair, or run `/lootryx setup CODE` in game.

@@ -10,14 +10,14 @@ with DKP, auctions, events and attendance at the center of the default interface
 
 | Windower 4 | Ashita v4 |
 | --- | --- |
-| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.33/Lootryx-v0.40.33-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.33/Lootryx-v0.40.33-Ashita.zip)** |
+| **[Download for Windower 4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.34/Lootryx-v0.40.34-Windower.zip)** | **[Download for Ashita v4](https://github.com/sssiriusly/lootryx-addon/releases/download/v0.40.34/Lootryx-v0.40.34-Ashita.zip)** |
 | `//lua load lootryx` | `/addon load lootryx` |
 
 Extract the ZIP and copy its `lootryx` folder into your loader's `addons` folder.
 Each download includes installation instructions for that loader. Both contain the
 same shared addon runtime, which detects Windower or Ashita automatically.
 
-[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.33)
+[Release notes and checksums](https://github.com/sssiriusly/lootryx-addon/releases/tag/v0.40.34)
  · [Full installation guide](docs/INSTALL.md)
 
 ![Lootryx Home with auction activity, recruitment and separate DKP balances](docs/screenshots/01-home.png)

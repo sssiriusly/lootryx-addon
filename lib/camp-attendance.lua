@@ -8,7 +8,8 @@ function M.new(api)
   local function now() return api.now and api.now() or os.time() end
   self.next_poll=now()+30
   local function ms() return now()*1000+offset end
-  local function camp() return self.state and self.state.activeCamp end
+  local function camp() return not self.listing and self.state and self.state.activeCamp end
+  local function clear_review() self.review=nil;self.selected={} end
   local function countdown(deadline) local n=math.max(0,math.ceil((deadline-ms())/1000));return string.format('%d:%02d',math.floor(n/60),n%60) end
   local function latejoin(c,check)
     if check.checkNumber<=0 or not check.periodStartsAtMs then return false end
@@ -25,7 +26,12 @@ function M.new(api)
   end
   local function accept(reply,background)
     if background or not self.viewid then self.live=reply end
-    if not background or not self.viewid or (reply.activeCamp and reply.activeCamp.id==self.viewid) then self.state=reply end;offset=reply.serverNowMs-now()*1000;self.failures=0;self.next_poll=now()+30
+    if not background or not self.viewid or (reply.activeCamp and reply.activeCamp.id==self.viewid) then
+      local previous=camp();local incoming=reply.activeCamp
+      if previous and (not incoming or previous.id~=incoming.id) then clear_review() end
+      self.state=reply
+    end
+    offset=reply.serverNowMs-now()*1000;self.failures=0;self.next_poll=now()+30
     local c=reply.activeCamp;local check=c and opencheck(c)
     local rc=c and c.readyCheck
     if c and c.myJoined and rc and rc.open and rc.closesAtMs>ms() and not rc.myResponse and not noticed[rc.id] then
@@ -53,7 +59,7 @@ function M.new(api)
     if type(reply.serverNowMs)=='number' and type(reply.camps)=='table' then accept(reply) else read(true,body.campId) end
     self.feedback=type(reply.warning)=='string' and reply.warning or message;api.notify(self.feedback);return true
   end
-  function self.reset() self.state=nil;self.next_poll=now()+30;self.draft=nil;self.review=nil;self.selected={};self.feedback=nil;self.live=nil;self.viewid=nil;offset=0;noticed={} end
+  function self.reset() self.state=nil;self.next_poll=now()+30;self.draft=nil;clear_review();self.feedback=nil;self.live=nil;self.viewid=nil;self.listing=nil;offset=0;noticed={} end
   function self.poll(timestamp)
     if api.enabled and not api.enabled() then return end
     if (timestamp or now())<self.next_poll then return end
@@ -82,10 +88,10 @@ function M.new(api)
     local action=id:match('^camp:(.*)$');if not action then return false end
     if action=='new' and not self.state then read(false) end
     local c=camp();local manage=self.state and self.state.canManage
-    if action=='open' then self.viewid=nil;read(false)
+    if action=='open' then clear_review();self.draft=nil;self.listing=nil;self.viewid=nil;read(false)
     elseif action=='refresh' then read(false,self.viewid)
-    elseif action:sub(1,5)=='view:' then self.review=nil;self.viewid=action:sub(6);read(false,self.viewid)
-    elseif action=='list' then self.review=nil;self.draft=nil;self.state.activeCamp=nil
+    elseif action:sub(1,5)=='view:' then clear_review();self.draft=nil;self.listing=nil;self.viewid=action:sub(6);read(false,self.viewid)
+    elseif action=='list' then clear_review();self.draft=nil;self.listing=true;self.viewid=nil
     elseif action=='new' and manage then self.draft={target='',starts='',delay=0,policy='EXPO'};self.review=nil
     elseif action=='cancel' then self.draft=nil;self.review=nil;self.selected={}
     elseif action:sub(1,6)=='delay:' and self.draft then self.draft.delay=tonumber(action:sub(7));self.draft.starts='';self.draft.requestId=nil;self.review=nil
@@ -101,7 +107,7 @@ function M.new(api)
         self.review={kind='start',payload={observationOnly=false,policy=d.policy,targetName=d.target,poolId=d.poolId,startsAt=d.starts~='' and d.starts or (d.delay and d.delay>0 and os.date('!%Y-%m-%dT%H:%M:%SZ',math.floor(ms()/1000)+d.delay*60) or nil),requestId=d.requestId}}
       end
     elseif action=='confirm-start' and manage and self.review and self.review.kind=='start' then
-      if mutate('start',self.review.payload,'Camp started. Members must join and answer each check.') then self.review=nil;self.draft=nil end
+      if mutate('start',self.review.payload,'Camp started. Members must join and answer each check.') then self.review=nil;self.draft=nil;self.listing=nil;self.viewid=nil end
     elseif action=='ready-start' and manage and c then mutate('ready-start',{campId=c.id,requestId='ready-'..now()..'-'..tostring({}):gsub('[^%w]','')},'Availability check opened. No DKP is awarded by this check.')
     elseif (action=='ready-now' or action=='unavailable-now') and c and c.readyCheck then mutate('ready-respond',{campId=c.id,readyCheckId=c.readyCheck.id,response=action=='ready-now' and 'READY' or 'AFK'},'Availability response recorded.')
     elseif action=='join' and c and c.status=='ACTIVE' then mutate('join',{campId=c.id},'Joined '..c.targetName..'. Watch for attendance checks.')
@@ -118,13 +124,13 @@ function M.new(api)
     elseif action=='confirm-post' and manage and c and self.review and self.review.kind=='post' then
       if #self.review.reason<8 then self.feedback='Enter a review note of at least 8 characters.'
       elseif mutate('post',{campId=c.id,expectedRevision=self.review.revision,reason=self.review.reason},'Reviewed attendance DKP posted to the session wallet.') then self.review=nil end
-    elseif action:sub(1,10)=='exception:' and manage and c and not c.postedAtMs then self.review={kind='exception',membershipId=action:sub(11),reason='',action='GRANT'}
+    elseif action:sub(1,10)=='exception:' and manage and c and not c.postedAtMs then self.review={kind='exception',revision=c.revision,membershipId=action:sub(11),reason='',action='GRANT'}
     elseif action:sub(1,6)=='check:' and self.review and self.review.kind=='exception' then self.review.checkNumber=tonumber(action:sub(7))
     elseif (action=='grant' or action=='deny') and self.review and self.review.kind=='exception' then self.review.action=action=='grant' and 'GRANT' or 'DENY'
     elseif action=='confirm-exception' and manage and c and self.review and self.review.kind=='exception' then
       local r=self.review
       if not r.checkNumber or #r.reason<8 then self.feedback='Choose a check and enter a reason of at least 8 characters.'
-      elseif mutate('exception',{campId=c.id,membershipId=r.membershipId,expectedRevision=c.revision,checkNumber=r.checkNumber,reason=r.reason,action=r.action},'Attendance correction recorded in the audit log.') then self.review=nil end
+      elseif mutate('exception',{campId=c.id,membershipId=r.membershipId,expectedRevision=r.revision,checkNumber=r.checkNumber,reason=r.reason,action=r.action},'Attendance correction recorded in the audit log.') then self.review=nil end
     elseif action=='confirm-end' and manage and c and self.review and self.review.kind=='end' then
       local ids={};for key,on in pairs(self.selected) do if on then ids[#ids+1]=key end end
       if mutate('end',{campId=c.id,outcome=self.review.outcome,killMembershipIds=#ids>0 and ids or nil,expectedRevision=self.review.revision},'Session ended. Observations retained for review. No DKP posted.') then self.review=nil;self.selected={} end
